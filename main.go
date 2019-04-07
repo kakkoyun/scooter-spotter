@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"time"
 )
@@ -19,22 +18,6 @@ var (
 func init() {
 	// Initialize global dependencies
 	logger = log.New(os.Stdout, "http: ", log.LstdFlags)
-}
-
-func newRouter() http.Handler {
-	router := http.NewServeMux()
-
-	router.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World!"))
-		w.Write([]byte("\n"))
-	}))
-
-	router.Handle("/_status", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Ok"))
-		w.Write([]byte("\n"))
-	}))
-
-	return router
 }
 
 func main() {
