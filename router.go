@@ -5,19 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-)
 
-// Scooter stores meta data for a Scooter
-type Scooter struct {
-	IDd              int  `json:"id"`
-	BatteryLevel     int  `json:"battery_level"`
-	AvailableForRent bool `json:"available_for_rent"`
-}
+	"github.com/kakkoyun/scooter-spotter/scooter"
+)
 
 // Response represents payload of service response
 type Response struct {
-	Data    []Scooter `json:"data,omitempty"`
-	Message string    `json:"message,omitempty"`
+	Data    []scooter.Scooter `json:"data,omitempty"`
+	Message string            `json:"message,omitempty"`
 }
 
 func newRouter() http.Handler {
@@ -40,15 +35,26 @@ func newRouter() http.Handler {
 			return
 		}
 
-		max, err := strconv.ParseUint(param, 10, 64)
+		max, err := strconv.ParseInt(param, 10, 32)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			encoder.Encode(Response{Message: fmt.Sprintf("Error: %s is not a positive valid integer", param)})
+			encoder.Encode(Response{Message: fmt.Sprintf("Error: %s is not a valid integer", param)})
+			return
+		}
+
+		if max <= 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			encoder.Encode(Response{Message: fmt.Sprintf("Error: %s is not a positive integer", param)})
 			return
 		}
 
 		// 2. Return external service results
-		encoder.Encode(Response{Message: fmt.Sprintf("Given param: %d", max)})
+		result, err := scooter.FindAll(int(max))
+		if err != nil {
+			logger.Printf("Scooter service failed: %v", err)
+			encoder.Encode(Response{Message: fmt.Sprintf("Scooter service failed")})
+		}
+		encoder.Encode(Response{Data: result})
 	}))
 
 	router.Handle("/_status", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

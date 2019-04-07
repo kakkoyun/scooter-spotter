@@ -61,7 +61,7 @@ func (srv *server) listenInterrupts(idleConnsClosed chan<- struct{}) {
 			// We received an interrupt signal, shutdown.
 			if err := srv.s.Shutdown(context.Background()); err != nil {
 				// Error from closing listeners, or context timeout.
-				logger.Printf("Server graceful shutdown failed: %v", err)
+				logger.Printf("Server graceful shutdown failed: %v\n", err)
 			}
 			close(done)
 		}()

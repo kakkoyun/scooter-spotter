@@ -34,9 +34,6 @@ func main() {
 		logger,
 	)
 
-	// TODO: Add simple logging
-	// TODO: Add simple tracing
-
 	logger.Println("Server is starting")
 	if err := srv.listenAndServe(); err != nil {
 		log.Fatalln(fmt.Errorf(" %+v", err))
