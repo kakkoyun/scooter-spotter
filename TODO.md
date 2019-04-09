@@ -2,7 +2,7 @@
 
 ## Development
 
-* [ ] Add documentation README
+* [x] Add documentation README
 * [ ] Better error handling for errors from the service workers
 * [ ] Improve grace period CLI argument by using https://golang.org/pkg/time/#ParseDuration
 * [ ] Add simple logging
@@ -14,6 +14,6 @@
 
 ## Operation
 
-* [ ] Add a Makefile
-* [ ] Add CI/CD configuration
-* [ ] Add dockerfile/kubernetes configuration
+* [x] Add a Makefile
+* [x] Add CI/CD configuration
+* [x] Add dockerfile/kubernetes configuration

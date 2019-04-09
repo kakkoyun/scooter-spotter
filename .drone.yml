@@ -1,0 +1,93 @@
+---
+kind: pipeline
+name: build
+
+platform:
+  os: linux
+  arch: amd64
+
+clone:
+  depth: 50
+
+steps:
+- name: fetch
+  image: docker:git
+  commands:
+  - git fetch --tags
+
+- name: build
+  pull: true
+  image: golang:1.12-alpine
+  commands:
+  - apk add --update make git
+  - make scooter-spotter
+
+- name: test
+  pull: true
+  image: golang:1.12-alpine
+  commands:
+  - go test -v -mod=vendor -cover ./...
+  environment:
+    CGO_ENABLED: 0
+
+- name: analyze
+  pull: true
+  image: golang:1.12-alpine
+  commands:
+  - "wget -O - -q https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.14.0"
+  - ./bin/golangci-lint run -v --enable-all -D gochecknoglobals
+  environment:
+    CGO_ENABLED: 0
+
+trigger:
+  branch:
+  - master
+  event:
+  - push
+  - pull_request
+
+---
+kind: pipeline
+name: release
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: fetch
+  image: docker:git
+  commands:
+  - git fetch --tags
+
+- name: github-release-tag
+  image: golang:1.12
+  commands:
+  # - TODO install upx
+  - git status
+  - "curl -sL https://git.io/goreleaser | bash"
+  - git status
+  environment:
+    github_token:
+      from_secret: github_token
+    docker_password:
+      from_secret: docker_password
+    docker_username:
+      from_secret: docker_username
+  when:
+    ref:
+    - "refs/tags/*"
+
+trigger:
+  branch:
+  - master
+  event:
+  - push
+  # - tag
+  status:
+  - success
+
+depends_on:
+- build
+
+...

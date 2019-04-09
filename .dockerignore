@@ -1,0 +1,11 @@
+*.md
+*.yml
+*_test.go
+*.png
+*.jpeg
+*.jpg
+.github
+target
+vendor
+backup
+LICENSE
