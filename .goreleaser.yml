@@ -1,0 +1,80 @@
+before:
+  hooks:
+    - make clean
+    - make fetch-dependencies
+dist: target/dist
+builds:
+- env:
+  - CGO_ENABLED=0
+  goos:
+    - darwin
+    - linux
+    - windows
+  goarch:
+    - 386
+    - amd64
+    - arm
+    - arm64
+  goarm:
+    - 5
+    - 6
+    - 7
+  ldflags: >
+    -s
+    -w
+    -X main.Version={{.Version}}
+    -X main.DateBuilt={{.Date}}
+  hooks:
+    post: find target/dist -name scooter-spotter -type f -exec upx {} +
+archive:
+  format: tar.gz # default. Also available .zip
+  replacements:
+    darwin: Darwin
+    linux: Linux
+    386: i386
+    amd64: x86_64
+  files:
+    - README.md
+    - CHANGELOG.md
+    - LICENSE
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt" # default
+snapshot:
+  name_template: "SNAPSHOT-{{.ShortCommit}}" # default
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - typo
+    - '^docs:'
+    - '^test:'
+    - Merge pull request
+    - Merge branch
+release:
+  github:
+    owner: kakkoyun
+    name: scooter-spotter
+  prerelease: auto # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
+  disable: false
+dockers:
+  -
+    goos: linux
+    goarch: amd64
+    goarm: ''
+    binaries:
+    - scooter-spotter
+    image_templates:
+    - "kakkoyun/scooter-spotter:latest"
+    - "kakkoyun/scooter-spotter:{{ .Tag }}"
+    - "kakkoyun/scooter-spotter:v{{ .Major }}.{{ .Minor }}"
+    - "kakkoyun/scooter-spotter:v{{ .Major }}"
+    # Skips the docker push. Could be useful if you also do draft releases.
+    # If set to auto, the release will not be pushed to the docker repository
+    # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+    # Defaults to false.
+    skip_push: auto
+    dockerfile: Dockerfile
+    build_flag_templates:
+    - "--label=org.label-schema.schema-version=1.0"
+    - "--label=org.label-schema.version={{.Version}}"
+    - "--label=org.label-schema.name={{.ProjectName}}"
